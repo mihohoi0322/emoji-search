@@ -1,0 +1,42 @@
+name: Trigger auto deployment for krmt-demo-container
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ master ]
+    paths:
+    - '**'
+    - '.github/workflows/krmt-demo-container-AutoDeployTrigger-6f59cfbb-6422-4e53-8275-f5602fe09850.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.KRMTDEMOCONTAINER_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: mihokurimoto.azurecr.io
+          registryUsername: ${{ secrets.KRMTDEMOCONTAINER_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.KRMTDEMOCONTAINER_REGISTRY_PASSWORD }}
+          containerAppName: krmt-demo-container
+          resourceGroup: demo-container
+          imageToBuild: mihokurimoto.azurecr.io/krmt-demo-container:${{ github.sha }}
+          
+
+     
+
